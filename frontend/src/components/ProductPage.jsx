@@ -7,16 +7,9 @@ const API = import.meta.env.VITE_API_URL || '/api'
 
 const PRODUCT_IMAGES = [
   'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800',
-  'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800',
-  'https://images.unsplash.com/photo-1548454782-15b189d129ab?w=800',
+  'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800&h=1000&fit=crop&crop=top',
+  'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800&h=1000&fit=crop&crop=bottom',
 ]
-
-const COLOR_TINTS = {
-  Camel: 'rgba(201,169,110,0.12)',
-  Charcoal: 'rgba(44,44,42,0.3)',
-  Stone: 'rgba(138,134,128,0.2)',
-  Burgundy: 'rgba(74,27,12,0.3)',
-}
 
 const FALLBACK_PRODUCT = {
   _id: 'local',
@@ -76,8 +69,6 @@ export default function ProductPage() {
       })
   }, [])
 
-  const tint = COLOR_TINTS[selectedColor?.name] || 'transparent'
-
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : null
@@ -105,52 +96,28 @@ export default function ProductPage() {
   return (
     <div className={styles.page}>
       <div className={styles.gallery}>
-
-        {/* Main Image */}
         <div className={styles.mainImg}>
           {product.badge && <span className={styles.badge}>{product.badge}</span>}
-          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            <img
-              src={PRODUCT_IMAGES[activeImg]}
-              alt={product.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              background: tint,
-              mixBlendMode: 'multiply',
-              pointerEvents: 'none',
-              transition: 'background 0.3s ease'
-            }} />
-          </div>
+          <img
+            src={PRODUCT_IMAGES[activeImg]}
+            alt={product.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+          />
         </div>
-
-        {/* Thumbnails */}
         <div className={styles.thumbs}>
           {PRODUCT_IMAGES.map((img, i) => (
             <div
               key={i}
               className={`${styles.thumb} ${i === activeImg ? styles.active : ''}`}
               onClick={() => setActiveImg(i)}
-              style={{ position: 'relative', overflow: 'hidden' }}
-            >
-              <img
-                src={img}
-                alt={`view ${i + 1}`}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
-              />
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: tint,
-                mixBlendMode: 'multiply',
-                pointerEvents: 'none'
-              }} />
-            </div>
+              style={{
+                backgroundImage: `url(${img})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center top'
+              }}
+            />
           ))}
         </div>
-
       </div>
 
       <div className={styles.info}>
