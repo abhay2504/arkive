@@ -5,6 +5,29 @@ import styles from './ProductPage.module.css'
 
 const API = import.meta.env.VITE_API_URL || '/api'
 
+const COLOR_IMAGES = {
+  Camel: [
+    'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800',
+    'https://images.unsplash.com/photo-1548454782-15b189d129ab?w=800',
+    'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800',
+  ],
+  Charcoal: [
+    'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800',
+    'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=800',
+    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800',
+  ],
+  Stone: [
+    'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=800',
+    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800',
+    'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800',
+  ],
+  Burgundy: [
+    'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800',
+    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
+    'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800',
+  ],
+}
+
 const FALLBACK_PRODUCT = {
   _id: 'local',
   name: 'Structured Wool Overcoat',
@@ -35,11 +58,6 @@ const FALLBACK_PRODUCT = {
   ],
   badge: 'New Season',
   rating: { score: 4.8, count: 124 },
-  images: [
-    'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800',
-    'https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
-  ],
 }
 
 export default function ProductPage() {
@@ -57,13 +75,8 @@ export default function ProductPage() {
       .then(({ data }) => {
         if (data.data && data.data.length > 0) {
           const p = data.data[0]
-          // merge API product with fallback images if API has none
-          const merged = {
-            ...p,
-            images: p.images?.length ? p.images : FALLBACK_PRODUCT.images
-          }
-          setProduct(merged)
-          setSelectedColor(merged.colors[0])
+          setProduct(p)
+          setSelectedColor(p.colors[0])
           setActiveImg(0)
           setSelectedSize(null)
         }
@@ -72,6 +85,9 @@ export default function ProductPage() {
         setSelectedColor(FALLBACK_PRODUCT.colors[0])
       })
   }, [])
+
+  // Get images for currently selected color
+  const images = COLOR_IMAGES[selectedColor?.name] || COLOR_IMAGES.Camel
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -97,8 +113,6 @@ export default function ProductPage() {
     setTimeout(() => setToast(''), 2500)
   }
 
-  const images = product.images?.length ? product.images : FALLBACK_PRODUCT.images
-
   return (
     <div className={styles.page}>
       <div className={styles.gallery}>
@@ -119,7 +133,7 @@ export default function ProductPage() {
               style={{
                 backgroundImage: `url(${img})`,
                 backgroundSize: 'cover',
-                backgroundPosition: 'center'
+                backgroundPosition: 'center top'
               }}
             />
           ))}
