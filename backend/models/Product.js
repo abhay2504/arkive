@@ -11,6 +11,7 @@ const productSchema = new mongoose.Schema(
     colors: [{ name: String, hex: String }],
     sizes: [{ label: String, inStock: Boolean }],
     features: [String],
+    images: [String],
     badge: String,
     rating: { score: Number, count: Number },
   },
