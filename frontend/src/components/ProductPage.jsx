@@ -5,27 +5,17 @@ import styles from './ProductPage.module.css'
 
 const API = import.meta.env.VITE_API_URL || '/api'
 
-const COLOR_IMAGES = {
-  Camel: [
-    'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800',
-    'https://images.unsplash.com/photo-1548454782-15b189d129ab?w=800',
-    'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800',
-  ],
-  Charcoal: [
-    'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800',
-    'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=800',
-    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800',
-  ],
-  Stone: [
-    'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=800',
-    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800',
-    'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800',
-  ],
-  Burgundy: [
-    'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800',
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
-    'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800',
-  ],
+const PRODUCT_IMAGES = [
+  'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800',
+  'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800',
+  'https://images.unsplash.com/photo-1548454782-15b189d129ab?w=800',
+]
+
+const COLOR_TINTS = {
+  Camel: 'rgba(201,169,110,0.12)',
+  Charcoal: 'rgba(44,44,42,0.3)',
+  Stone: 'rgba(138,134,128,0.2)',
+  Burgundy: 'rgba(74,27,12,0.3)',
 }
 
 const FALLBACK_PRODUCT = {
@@ -86,8 +76,7 @@ export default function ProductPage() {
       })
   }, [])
 
-  // Get images for currently selected color
-  const images = COLOR_IMAGES[selectedColor?.name] || COLOR_IMAGES.Camel
+  const tint = COLOR_TINTS[selectedColor?.name] || 'transparent'
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -116,28 +105,52 @@ export default function ProductPage() {
   return (
     <div className={styles.page}>
       <div className={styles.gallery}>
+
+        {/* Main Image */}
         <div className={styles.mainImg}>
           {product.badge && <span className={styles.badge}>{product.badge}</span>}
-          <img
-            src={images[activeImg]}
-            alt={product.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <img
+              src={PRODUCT_IMAGES[activeImg]}
+              alt={product.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: tint,
+              mixBlendMode: 'multiply',
+              pointerEvents: 'none',
+              transition: 'background 0.3s ease'
+            }} />
+          </div>
         </div>
+
+        {/* Thumbnails */}
         <div className={styles.thumbs}>
-          {images.map((img, i) => (
+          {PRODUCT_IMAGES.map((img, i) => (
             <div
               key={i}
               className={`${styles.thumb} ${i === activeImg ? styles.active : ''}`}
               onClick={() => setActiveImg(i)}
-              style={{
-                backgroundImage: `url(${img})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center top'
-              }}
-            />
+              style={{ position: 'relative', overflow: 'hidden' }}
+            >
+              <img
+                src={img}
+                alt={`view ${i + 1}`}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+              />
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: tint,
+                mixBlendMode: 'multiply',
+                pointerEvents: 'none'
+              }} />
+            </div>
           ))}
         </div>
+
       </div>
 
       <div className={styles.info}>
