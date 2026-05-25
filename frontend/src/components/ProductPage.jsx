@@ -45,7 +45,7 @@ const FALLBACK_PRODUCT = {
 export default function ProductPage() {
   const [product, setProduct] = useState(FALLBACK_PRODUCT)
   const [activeImg, setActiveImg] = useState(0)
-  const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedColor, setSelectedColor] = useState(FALLBACK_PRODUCT.colors[0])
   const [selectedSize, setSelectedSize] = useState(null)
   const [qty, setQty] = useState(1)
   const [added, setAdded] = useState(false)
@@ -57,19 +57,21 @@ export default function ProductPage() {
       .then(({ data }) => {
         if (data.data && data.data.length > 0) {
           const p = data.data[0]
-          setProduct(p)
-          setSelectedColor(p.colors[0])
+          // merge API product with fallback images if API has none
+          const merged = {
+            ...p,
+            images: p.images?.length ? p.images : FALLBACK_PRODUCT.images
+          }
+          setProduct(merged)
+          setSelectedColor(merged.colors[0])
           setActiveImg(0)
+          setSelectedSize(null)
         }
       })
       .catch(() => {
         setSelectedColor(FALLBACK_PRODUCT.colors[0])
       })
   }, [])
-
-  useEffect(() => {
-    if (product && product.colors) setSelectedColor(product.colors[0])
-  }, [product])
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -95,36 +97,30 @@ export default function ProductPage() {
     setTimeout(() => setToast(''), 2500)
   }
 
+  const images = product.images?.length ? product.images : FALLBACK_PRODUCT.images
+
   return (
     <div className={styles.page}>
       <div className={styles.gallery}>
         <div className={styles.mainImg}>
           {product.badge && <span className={styles.badge}>{product.badge}</span>}
-          {product.images?.[activeImg] ? (
-            <img
-              src={product.images[activeImg]}
-              alt={product.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          ) : (
-            <div className={styles.imgPlaceholder} style={{ background: selectedColor?.hex + '22' }}>
-              <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-                <rect x="30" y="20" width="60" height="80" rx="4" fill={selectedColor?.hex || '#D8D4CE'} opacity="0.4"/>
-              </svg>
-            </div>
-          )}
+          <img
+            src={images[activeImg]}
+            alt={product.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
         </div>
         <div className={styles.thumbs}>
-          {(product.images?.length ? product.images : [null, null, null, null]).map((img, i) => (
+          {images.map((img, i) => (
             <div
               key={i}
               className={`${styles.thumb} ${i === activeImg ? styles.active : ''}`}
-              onClick={() => img && setActiveImg(i)}
-              style={img ? {
+              onClick={() => setActiveImg(i)}
+              style={{
                 backgroundImage: `url(${img})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
-              } : {}}
+              }}
             />
           ))}
         </div>
@@ -160,7 +156,7 @@ export default function ProductPage() {
                 key={c.name}
                 className={`${styles.swatch} ${selectedColor?.name === c.name ? styles.swatchActive : ''}`}
                 style={{ background: c.hex }}
-                onClick={() => setSelectedColor(c)}
+                onClick={() => { setSelectedColor(c); setActiveImg(0); }}
                 title={c.name}
               />
             ))}
@@ -189,7 +185,10 @@ export default function ProductPage() {
             <button className={styles.qtyBtn} onClick={() => setQty(q => Math.min(10, q + 1))}>+</button>
           </div>
         </div>
-        <button className={`${styles.addBtn} ${added ? styles.addedBtn : ''}`} onClick={handleAddToCart}>
+        <button
+          className={`${styles.addBtn} ${added ? styles.addedBtn : ''}`}
+          onClick={handleAddToCart}
+        >
           {added ? '✓ Added to Cart' : 'Add to Cart'}
         </button>
         <button className={styles.wishlistBtn}>♡ &nbsp; Save to Wishlist</button>
