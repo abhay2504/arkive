@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST seed products (for demo)
+// POST seed products
 router.post('/seed', async (req, res) => {
   try {
     await Product.deleteMany({});
@@ -44,6 +44,11 @@ router.post('/seed', async (req, res) => {
         originalPrice: 11999,
         category: 'Jackets',
         sku: 'ARK-OC-2401',
+        images: [
+          'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800',
+          'https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+        ],
         colors: [
           { name: 'Camel', hex: '#C9A96E' },
           { name: 'Charcoal', hex: '#2C2C2A' },
@@ -74,6 +79,10 @@ router.post('/seed', async (req, res) => {
         originalPrice: 7999,
         category: 'Blazers',
         sku: 'ARK-BL-2402',
+        images: [
+          'https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=800',
+          'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=800',
+        ],
         colors: [
           { name: 'Ivory', hex: '#F5F0E8' },
           { name: 'Navy', hex: '#1B2A4A' },
@@ -94,11 +103,7 @@ router.post('/seed', async (req, res) => {
       },
     ];
     const inserted = await Product.insertMany(products);
-    res.json({
-      success: true,
-      message: `Seeded ${inserted.length} products`,
-      data: inserted,
-    });
+    res.json({ success: true, message: `Seeded ${inserted.length} products`, data: inserted });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

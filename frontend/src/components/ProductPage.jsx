@@ -5,7 +5,6 @@ import styles from './ProductPage.module.css'
 
 const API = import.meta.env.VITE_API_URL || '/api'
 
-// Fallback product data if API isn't seeded yet
 const FALLBACK_PRODUCT = {
   _id: 'local',
   name: 'Structured Wool Overcoat',
@@ -36,10 +35,16 @@ const FALLBACK_PRODUCT = {
   ],
   badge: 'New Season',
   rating: { score: 4.8, count: 124 },
+  images: [
+    'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=800',
+    'https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=800',
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
+  ],
 }
 
 export default function ProductPage() {
   const [product, setProduct] = useState(FALLBACK_PRODUCT)
+  const [activeImg, setActiveImg] = useState(0)
   const [selectedColor, setSelectedColor] = useState(null)
   const [selectedSize, setSelectedSize] = useState(null)
   const [qty, setQty] = useState(1)
@@ -54,6 +59,7 @@ export default function ProductPage() {
           const p = data.data[0]
           setProduct(p)
           setSelectedColor(p.colors[0])
+          setActiveImg(0)
         }
       })
       .catch(() => {
@@ -91,43 +97,53 @@ export default function ProductPage() {
 
   return (
     <div className={styles.page}>
-      {/* Gallery */}
       <div className={styles.gallery}>
         <div className={styles.mainImg}>
           {product.badge && <span className={styles.badge}>{product.badge}</span>}
-          <div className={styles.imgPlaceholder} style={{ background: selectedColor?.hex + '22' }}>
-            <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-              <rect x="30" y="20" width="60" height="80" rx="4" fill={selectedColor?.hex || '#D8D4CE'} opacity="0.4"/>
-              <rect x="38" y="28" width="44" height="8" rx="2" fill={selectedColor?.hex || '#C4BFB8'} opacity="0.6"/>
-              <rect x="38" y="42" width="44" height="44" rx="2" fill={selectedColor?.hex || '#C4BFB8'} opacity="0.5"/>
-            </svg>
-          </div>
+          {product.images?.[activeImg] ? (
+            <img
+              src={product.images[activeImg]}
+              alt={product.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <div className={styles.imgPlaceholder} style={{ background: selectedColor?.hex + '22' }}>
+              <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+                <rect x="30" y="20" width="60" height="80" rx="4" fill={selectedColor?.hex || '#D8D4CE'} opacity="0.4"/>
+              </svg>
+            </div>
+          )}
         </div>
         <div className={styles.thumbs}>
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className={`${styles.thumb} ${i === 0 ? styles.active : ''}`} />
+          {(product.images?.length ? product.images : [null, null, null, null]).map((img, i) => (
+            <div
+              key={i}
+              className={`${styles.thumb} ${i === activeImg ? styles.active : ''}`}
+              onClick={() => img && setActiveImg(i)}
+              style={img ? {
+                backgroundImage: `url(${img})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              } : {}}
+            />
           ))}
         </div>
       </div>
 
-      {/* Info */}
       <div className={styles.info}>
         <div className={styles.breadcrumb}>
           Outerwear / <span>{product.category}</span>
         </div>
-
         <div>
           <h1 className={styles.name}>{product.name}</h1>
           <p className={styles.sku}>SKU: {product.sku}</p>
         </div>
-
         {product.rating && (
           <div className={styles.rating}>
             <span className={styles.stars}>{'★'.repeat(Math.round(product.rating.score))}</span>
             <span className={styles.ratingText}>{product.rating.score} · {product.rating.count} reviews</span>
           </div>
         )}
-
         <div className={styles.priceRow}>
           <span className={styles.price}>₹{product.price?.toLocaleString('en-IN')}</span>
           {product.originalPrice && (
@@ -135,14 +151,9 @@ export default function ProductPage() {
           )}
           {discount && <span className={styles.saveBadge}>{discount}% off</span>}
         </div>
-
         <div className={styles.divider} />
-
-        {/* Color */}
         <div>
-          <div className={styles.optLabel}>
-            Color — <span>{selectedColor?.name}</span>
-          </div>
+          <div className={styles.optLabel}>Color — <span>{selectedColor?.name}</span></div>
           <div className={styles.swatches}>
             {product.colors?.map((c) => (
               <div
@@ -155,12 +166,8 @@ export default function ProductPage() {
             ))}
           </div>
         </div>
-
-        {/* Size */}
         <div>
-          <div className={styles.optLabel}>
-            Size — <span>{selectedSize?.label || 'Select'}</span>
-          </div>
+          <div className={styles.optLabel}>Size — <span>{selectedSize?.label || 'Select'}</span></div>
           <div className={styles.sizeGrid}>
             {product.sizes?.map((s) => (
               <button
@@ -174,8 +181,6 @@ export default function ProductPage() {
             ))}
           </div>
         </div>
-
-        {/* Qty */}
         <div>
           <div className={styles.optLabel}>Quantity</div>
           <div className={styles.qtyRow}>
@@ -184,23 +189,16 @@ export default function ProductPage() {
             <button className={styles.qtyBtn} onClick={() => setQty(q => Math.min(10, q + 1))}>+</button>
           </div>
         </div>
-
-        <button
-          className={`${styles.addBtn} ${added ? styles.addedBtn : ''}`}
-          onClick={handleAddToCart}
-        >
+        <button className={`${styles.addBtn} ${added ? styles.addedBtn : ''}`} onClick={handleAddToCart}>
           {added ? '✓ Added to Cart' : 'Add to Cart'}
         </button>
-
         <button className={styles.wishlistBtn}>♡ &nbsp; Save to Wishlist</button>
-
         <ul className={styles.features}>
           {product.features?.map((f, i) => (
             <li key={i} className={styles.feature}>{f}</li>
           ))}
         </ul>
       </div>
-
       {toast && <div className={styles.toast}>{toast}</div>}
     </div>
   )
